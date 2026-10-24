@@ -1,0 +1,309 @@
+.nav-rail {
+  flex: none;
+  width: var(--rail-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-0);
+  border-right: 1px solid var(--line);
+  transition: width var(--dur-panel) var(--ease-standard);
+  /* Children clip themselves during the collapse (see .wordmark-text / .nav-item-label), so the
+     rail itself stays visible — otherwise the foot's tooltip is cut off at 60px, which is exactly
+     where the reader needs it most. */
+  overflow: visible;
+}
+
+.nav-rail.collapsed {
+  width: var(--rail-w-collapsed);
+}
+
+/* ---- head ----
+ * ONE LEFT VERTICAL. The mark, every section eyebrow, every item icon and the record dot in the
+ * foot all hang on the same 20px line: the scroll region insets its rows by --space-2 so a hovered
+ * row is a plate rather than a full-bleed band, and the row's own --space-3 puts its icon at 20.
+ * The head and foot therefore take --space-5, not --space-4 — at 16px the wordmark sat 4px inboard
+ * of the column it heads, which is the misalignment the eye catches first on a rail it sees on
+ * every screen.
+ *
+ * The rule under the head is the SAME rule as the one under the top bar: they are collinear and
+ * run the full width of the application, so they may not be two different weights. */
+.nav-head {
+  display: flex;
+  align-items: center;
+  height: var(--topbar-h);
+  padding: 0 var(--space-5);
+  border-bottom: 1px solid var(--line);
+  transition: padding var(--dur-panel) var(--ease-standard);
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  transition: gap var(--dur-panel) var(--ease-standard);
+}
+
+.wordmark svg {
+  flex: none;
+}
+
+/* The house name is set in the editorial serif — it is the masthead of the document,
+   not a UI label. Everything below it in the rail is instrument sans. */
+.wordmark-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 180px;
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  line-height: 1;
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  white-space: nowrap;
+  transition:
+    max-width var(--dur-panel) var(--ease-standard),
+    opacity var(--dur-fast) var(--ease-out-quad);
+}
+
+.wordmark-sub {
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  transition: color var(--dur-micro) var(--ease-out-quad);
+}
+
+/* The masthead is a link to the opening page and was the one control in the frame that answered a
+   pointer with nothing at all. It answers on the same clock as every other hover here. */
+.wordmark:hover .wordmark-sub {
+  color: var(--ink-muted);
+}
+
+.collapsed .nav-head {
+  padding: 0;
+  justify-content: center;
+}
+
+.collapsed .wordmark {
+  gap: 0;
+}
+
+.collapsed .wordmark-text {
+  max-width: 0;
+  opacity: 0;
+}
+
+/* ---- generic icon button (shared primitive) ---- */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  color: var(--ink-faint);
+  transition:
+    color var(--dur-micro) var(--ease-out-quad),
+    background var(--dur-micro) var(--ease-out-quad);
+}
+
+.icon-btn:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+
+/* ---- scroll region ---- */
+.nav-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nav-section-label {
+  height: 15px;
+  padding: 0 var(--space-3);
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    height var(--dur-panel) var(--ease-standard),
+    margin-bottom var(--dur-panel) var(--ease-standard),
+    opacity var(--dur-fast) var(--ease-out-quad);
+}
+
+/* Collapsed, the section headings fold away — so the grouping is restated as a hairline,
+   which is the only structure a 60px column has room for. */
+.collapsed .nav-section-label {
+  height: 0;
+  margin-bottom: 0;
+  opacity: 0;
+}
+
+.collapsed .nav-section + .nav-section {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line-faint);
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 34px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  transition:
+    color var(--dur-micro) var(--ease-out-quad),
+    background var(--dur-micro) var(--ease-out-quad),
+    gap var(--dur-panel) var(--ease-standard),
+    padding var(--dur-panel) var(--ease-standard);
+}
+
+.nav-item-icon {
+  flex: none;
+}
+
+.nav-item-label {
+  max-width: 180px;
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    max-width var(--dur-panel) var(--ease-standard),
+    opacity var(--dur-fast) var(--ease-out-quad);
+}
+
+.nav-item:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+
+/* Selection is stated by WEIGHT + a squared rule, not by a coloured pill. On paper,
+   emphasis is typographic first; the accent bar is the confirming mark, not the message. */
+.nav-item.active {
+  color: var(--ink);
+  background: var(--accent-wash);
+  font-weight: var(--weight-semibold);
+}
+
+.nav-item-marker {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 2px;
+  height: 0;
+  background: var(--accent);
+  transform: translateY(-50%);
+  transition: height var(--dur-fast) var(--ease-standard);
+}
+
+.nav-item.active .nav-item-marker {
+  height: 100%;
+}
+
+.nav-item.active .nav-item-icon {
+  color: var(--accent);
+}
+
+.collapsed .nav-item {
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+}
+
+.collapsed .nav-item-label {
+  max-width: 0;
+  opacity: 0;
+}
+
+/* ---- foot ----
+ * A status line + the collapse control. The human-readable context belongs to the top bar;
+ * the foot carries the machine id in the data face — the string you would quote in a ticket —
+ * and the state of the connection behind it. Chrome must not restate chrome. */
+.nav-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  border-top: 1px solid var(--line-faint);
+  transition: padding var(--dur-panel) var(--ease-standard);
+}
+
+.nav-record {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  /* folds on the same clock as the labels beside it, so the whole rail closes as one movement */
+  transition: gap var(--dur-panel) var(--ease-standard);
+}
+
+.record-id {
+  font-size: var(--text-2xs);
+  color: var(--ink-quiet);
+  letter-spacing: 0.01em;
+  max-width: 150px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition:
+    max-width var(--dur-panel) var(--ease-standard),
+    opacity var(--dur-fast) var(--ease-out-quad);
+}
+
+/* A status dot states the state of the RECORD — loaded, loading, or failed. It is the one
+   pill-shaped mark the register allows, and it never asserts health we have not measured. */
+.record-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--ink-ghost);
+  box-shadow: 0 0 0 3px var(--surface-2);
+}
+
+.rec-ok .record-dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px var(--ok-wash);
+}
+
+.rec-danger .record-dot {
+  background: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-wash);
+}
+
+.collapsed .nav-foot {
+  flex-direction: column-reverse;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+}
+
+.collapsed .record-id {
+  max-width: 0;
+  opacity: 0;
+}
+
+/* The gap held for the folded-away id was still 12px wide, so the status dot sat 9px left of the
+   rail's centre line while the collapse control directly above it was centred — two marks, one
+   60px column, two different verticals. */
+.collapsed .nav-record {
+  gap: 0;
+}

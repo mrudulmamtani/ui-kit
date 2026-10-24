@@ -1,0 +1,1647 @@
+/* ===================================================================
+ * DataGrid — the data-grid standard, dressed in Institutional Light.
+ *
+ * The engine's markup is domain-free; this sheet is the whole of its appearance. Three rules
+ * govern every declaration below:
+ *
+ *   1. STRUCTURE IS HAIRLINES AND ALIGNMENT. The header has no fill: it is a header because a
+ *      1px --line-strong rule sits under it and the row rules beneath are --line-faint, roughly
+ *      half its contrast. That step is the only thing making it a header, and it is enough.
+ *   2. DENSITY IS SPACING ONLY. Every geometry here reads --grid-* custom properties, which the
+ *      component rewrites per tier. Type size, icon size, rule weight and ink are stated once
+ *      and never re-stated inside a tier, so a density change cannot shrink the type.
+ *   3. NO ZEBRA, NO RAG FILLS. Row hover is --surface-2, selection is the opaque
+ *      --accent-wash-plate, and the only vertical strokes in the whole grid are the
+ *      pinned-region boundary and a column-group boundary.
+ * =================================================================== */
+
+.dg {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  /* Every numeral in the grid — cells, subtotals, status bar — shares one numeral grid. */
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.dg ul,
+.dg ol,
+.dg dl {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ================================================================= toolbar
+ * One 34px band: quick filter, lens, density, saved views, the three export affordances and the
+ * keyboard overlay. Chrome, not data — sans, 12px, no figure larger than the cells below it.
+ *
+ * Every control in it is 28px tall, the contract's minimum target (1.8); the band is 34 rather
+ * than 36 because the two reclaimed pixels are the ledger's, and the clearance still reads.
+ * The left padding is --space-3 so the quick filter rules with the lead column's
+ * --grid-pad-x-lead beneath it.
+ *
+ * ONE line, always. The gap is --space-2 and the quick filter's floor is 108px so that a 950px
+ * grid still seats a lens, a surface control, the density group and every tool at full size:
+ * `flex-wrap` is NOT the answer here, because a wrapping line stops shrinking its items and
+ * spends a whole second band rather than the 24px of slack the quick filter is holding. */
+.dg-toolbar {
+  position: relative;
+  z-index: 6;
+  flex: none;
+  display: flex;
+  align-items: center;
+  column-gap: var(--space-2);
+  height: 34px;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-0);
+}
+
+/* The ONLY elastic item in the toolbar. Everything beside it is a labelled control whose label
+   stops being a label the moment it is clipped — "Save vi" is not a button. */
+.dg-quick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1 1 258px;
+  min-width: 108px;
+  max-width: 258px;
+  height: 28px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-inset);
+  color: var(--ink-faint);
+}
+
+.dg-quick:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
+}
+
+.dg-quick-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--ink);
+  outline: none;
+}
+
+.dg-quick-input::placeholder {
+  color: var(--ink-ghost);
+}
+
+.dg-lens {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: var(--space-2);
+}
+
+.dg-lens-k,
+.dg-status-k,
+.dg-panel-title,
+.dg-menu-sub {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.dg-select,
+.dg-mini-sel {
+  height: 28px;
+  max-width: 190px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-0);
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--ink);
+}
+
+.dg-select:focus-visible,
+.dg-mini-sel:focus-visible,
+.dg-ff:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* ---- density: three letters, a segmented control, spacing only ----
+ * `flex: none` on BOTH the group and its segments, deliberately. As ordinary flex children of a
+ * toolbar running over its width they shrank with everything else: the segments collapsed to
+ * ~9px, the glyphs overflowed their own dividers, the final R was sliced by the group's rounded
+ * border, and the control read as the string "CSR" while missing the contract's 28px target by a
+ * factor of three. A hit box is not slack. The quick filter is the toolbar's declared elastic
+ * item and absorbs the shortfall instead. */
+.dg-density {
+  flex: none;
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.dg-seg {
+  flex: none;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 var(--space-1);
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: var(--surface-0);
+  font: inherit;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.dg-seg:first-child {
+  border-left: 0;
+}
+
+.dg-seg:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.dg-seg.on {
+  background: var(--accent-wash-plate);
+  color: var(--accent-press);
+}
+
+/* ---- saved views + tools ---- */
+.dg-views,
+.dg-tools {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: var(--space-1);
+}
+
+/* Saved views are the one band that may shrink — a view NAME can ellipsize and still be
+   recognised — but the control that makes one may not, so it holds its own width. */
+.dg-views {
+  flex: none;
+  min-width: 0;
+}
+
+/* A saved view's NAME may ellipsize — it is still recognisable — but the control that makes one
+   may not: "Save vie" is not a button. */
+.dg-view-btn {
+  min-width: 0;
+  max-width: 132px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dg-tools {
+  margin-left: auto;
+}
+
+.dg-btn {
+  flex: none;
+  white-space: nowrap;
+}
+
+.dg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-0);
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--dur-micro) var(--ease-out-quad);
+}
+
+.dg-btn:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.dg-btn[aria-pressed="true"] {
+  background: var(--accent-wash-plate);
+  border-color: var(--accent-quiet);
+  color: var(--accent-press);
+}
+
+.dg-btn svg {
+  color: var(--ink-faint);
+}
+
+.dg-help {
+  width: 28px;
+  padding: 0;
+  justify-content: center;
+  font-weight: var(--weight-semibold);
+}
+
+.dg-view {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-0);
+  overflow: hidden;
+}
+
+.dg-view.on {
+  border-color: var(--accent-quiet);
+  background: var(--accent-wash-plate);
+}
+
+.dg-view-btn,
+.dg-view-x {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.dg-view-btn {
+  max-width: 132px;
+  padding: 0 var(--space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dg-view.on .dg-view-btn {
+  color: var(--accent-press);
+  font-weight: var(--weight-medium);
+}
+
+.dg-view-x {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 5px 0 2px;
+  color: var(--ink-ghost);
+}
+
+.dg-view-x:hover {
+  color: var(--danger);
+}
+
+.dg-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.dg-icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+/* ================================================================= chip bar
+ * Mandatory on every grid: one removable chip per active restriction, whatever layer set it,
+ * plus the live filtered-of-total count. A filter the reader cannot see is the commonest cause
+ * of "the data is missing". */
+.dg-chipbar {
+  position: relative;
+  z-index: 6;
+  flex: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 24px;
+  padding: 2px var(--space-3);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-1);
+  font-size: var(--text-2xs);
+  color: var(--ink-muted);
+}
+
+.dg-count b {
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+}
+
+.dg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 20px;
+  padding: 0 2px 0 var(--space-2);
+  border: 1px solid var(--accent-quiet);
+  border-radius: var(--radius-xs);
+  background: var(--accent-wash-plate);
+  color: var(--accent-press);
+}
+
+.dg-chip-label {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dg-chip-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: none;
+  color: var(--accent-quiet);
+  cursor: pointer;
+}
+
+.dg-chip-x:hover {
+  background: var(--accent-wash-strong);
+  color: var(--accent-press);
+}
+
+/* ---- multi-sort priority strip: unreadable without the numerals, so they lead ---- */
+.dg-sortstrip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.dg-sortchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--surface-0);
+  font: inherit;
+  font-size: var(--text-2xs);
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.dg-sortchip:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.dg-sortchip-n {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--ink-faint);
+}
+
+.dg-clear {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-2xs);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ================================================================= the grid frame */
+.dg-frame {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.dg-scroll {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--surface-0);
+  outline: none;
+}
+
+.dg-scroll:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--accent-ring);
+}
+
+.dg-canvas {
+  position: relative;
+  min-width: 100%;
+}
+
+/* ---- header stack: group band, leaf header, floating filter row ---- */
+.dg-headwrap {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--surface-0);
+}
+
+.dg-band,
+.dg-head,
+.dg-filterrow,
+.dg-row {
+  display: flex;
+  min-width: 100%;
+}
+
+/* Column group: an eyebrow band, uppercase because the leaf header is not. */
+.dg-band {
+  height: calc(var(--grid-header-h) - 4px);
+  border-bottom: 1px solid var(--line-faint);
+}
+
+.dg-band-cell {
+  display: flex;
+  align-items: center;
+  flex: none;
+  padding: 0 var(--grid-pad-x);
+  background: var(--surface-0);
+  overflow: hidden;
+}
+
+.dg-band-cell + .dg-band-cell {
+  /* the second of the two vertical strokes the standard permits */
+  border-left: 1px solid var(--line);
+}
+
+.dg-band-cell.pinned {
+  position: sticky;
+  z-index: 2;
+}
+
+.dg-band-label {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- leaf header: no fill; a --line-strong rule is what makes it a header ---- */
+.dg-head {
+  height: var(--grid-header-h);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.dg-h {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  flex: none;
+  background: var(--surface-0);
+}
+
+.dg-h-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--grid-pad-x);
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: inherit;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.dg-h.al-right .dg-h-btn {
+  flex-direction: row-reverse;
+}
+
+.dg-h:first-child .dg-h-btn {
+  padding-left: var(--grid-pad-x-lead);
+}
+
+.dg-h-btn:hover {
+  color: var(--ink);
+}
+
+.dg-h-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.18;
+}
+
+/* The label line carries the sort caret on its LEADING edge, sharing the label's baseline. A
+   caret dropped into the middle of the type block overprints the descenders and the unit line
+   beneath, and it is the loudest ink on a screen whose whole register is restraint. */
+.dg-h-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.dg-h.al-right .dg-h-line {
+  justify-content: flex-end;
+}
+
+.dg-h.al-right .dg-h-text {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* `align-items: flex-end` sizes the label and unit lines to their CONTENT, and content wider than
+   the column then bleeds across its neighbours — five unit lines overprinting each other into an
+   unreadable smear the moment the columns narrow. The cap is what makes the ellipsis fire. */
+.dg-h-line,
+.dg-h-unit {
+  max-width: 100%;
+}
+
+.dg-h-label {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Read aloud, never set: a 36px row-action column cannot hold a word, and a clipped one is
+   worse than none. The column still names itself in the column panel and to a screen reader. */
+.dg-h-label.is-quiet {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Unit and scale live HERE, never in the cell — the single largest gain in horizontal density. */
+.dg-h-unit {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-regular);
+  letter-spacing: 0;
+  color: var(--ink-quiet);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* An unsorted column states nothing: its chevron appears only under the pointer or keyboard,
+   so the header rank reads as "these two columns are sorted", not "all sixteen might be".
+
+   The caret rides the label's INWARD edge — trailing a left-aligned header, leading a
+   right-aligned one — so it never consumes LEADING inline space. It used to sit ahead of every
+   label, which stood a left-aligned header ~12px right of its own floating filter and of the
+   cell text beneath it, on every column of every grid in the product. Header label, filter
+   control and cell text now share ONE left ruling per column; §2 of the contract names that
+   drift "the fastest way to lose the AAA read". */
+.dg-h-sort {
+  order: 1;
+  flex: none;
+  font-size: 8px;
+  line-height: 1;
+  color: var(--line-strong);
+  opacity: 0;
+}
+
+.dg-h:hover .dg-h-sort,
+.dg-h.is-focus .dg-h-sort,
+.dg-h-sort.on {
+  opacity: 1;
+}
+
+.dg-h-sort.on {
+  color: var(--ink-muted);
+}
+
+/* A right-aligned header rules on its RIGHT edge, so there the inward edge is the leading one
+   and the caret keeps its original place ahead of the label. */
+.dg-h.al-right .dg-h-sort {
+  order: 0;
+}
+
+/* Sort STATE is carried by the label's weight; the caret only says which direction. */
+.dg-h.is-sorted .dg-h-label {
+  font-weight: var(--weight-bold);
+  color: var(--ink);
+}
+
+.dg-h-prio {
+  margin-left: 1px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--ink-quiet);
+}
+
+/* ---- resize grip: the gesture a practitioner tries before reading anything ---- */
+/* The resize target sits WHOLLY INSIDE its column. Straddling the boundary by 3px put an
+   absolutely positioned descendant past the row's right edge on every header, and a scroll box
+   counts that toward its scrollable width: the grid reported itself horizontally scrollable, lit
+   the frozen-edge cue and let the reader drag a fitting ledger sideways into empty space. */
+.dg-h-grip {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 7px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.dg-h-grip::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  right: 0;
+  width: 1px;
+  background: var(--line-strong);
+  opacity: 0;
+}
+
+.dg-h-grip:hover::after,
+.dg-h.is-dragging .dg-h-grip::after {
+  opacity: 1;
+}
+
+/* Offscreen probe the autosize pass measures against — the rendered face, never an estimate. */
+.dg-measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* The column menu is LIFTED OUT OF THE FLOW. Fourteen permanent pixels per header, across nine
+   headers, is 126px of the frame spent on a control that is invisible until the pointer arrives —
+   and it was the width that pushed "Last asserted" into an ellipsis. It sits over the header's
+   non-text side instead: the trailing gutter of a left-aligned header, the leading gutter of a
+   right-aligned one, where the label never reaches. Alt+↓ still opens it from the keyboard. */
+.dg-h-menu {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--line-strong);
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dg-h.al-right .dg-h-menu {
+  right: auto;
+  left: 0;
+}
+
+.dg-h:hover .dg-h-menu,
+.dg-h-menu:focus-visible {
+  opacity: 1;
+}
+
+.dg-h-menu:hover {
+  color: var(--ink);
+}
+
+/* ---- floating filter row: one compact control per column, on an inset well ---- */
+.dg-filterrow {
+  height: var(--grid-filter-h);
+  border-bottom: 1px solid var(--line);
+}
+
+/* The filter cell keeps a 3px gutter so the control's hover border never fuses with the column
+   boundary; the control gives that 3px back, along with its own 1px border, so the TEXT inside it
+   starts on --grid-pad-x — the cell's ruling, to the pixel, at every density tier. */
+.dg-f {
+  display: flex;
+  align-items: center;
+  flex: none;
+  padding: 0 3px;
+  background: var(--surface-inset);
+}
+
+.dg-ff {
+  width: 100%;
+  min-width: 0;
+  height: calc(var(--grid-filter-h) - 8px);
+  padding: 0 calc(var(--grid-pad-x) - 4px);
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  background: none;
+  font: inherit;
+  font-size: var(--text-2xs);
+  color: var(--ink);
+  outline: none;
+}
+
+.dg-f.al-right .dg-ff {
+  text-align: right;
+}
+
+/* The lead column is indented further in the header and in the cells; its filter follows, or the
+   identity column rules on three different verticals at once. */
+.dg-f:first-child .dg-ff {
+  padding-left: calc(var(--grid-pad-x-lead) - 4px);
+}
+
+.dg-ff::placeholder {
+  color: var(--ink-ghost);
+}
+
+.dg-ff:hover {
+  border-color: var(--line);
+  background: var(--surface-0);
+}
+
+.dg-ff:focus {
+  border-color: var(--accent);
+  background: var(--surface-0);
+}
+
+.dg-ff.on {
+  border-color: var(--accent-quiet);
+  background: var(--surface-0);
+  font-weight: var(--weight-medium);
+  color: var(--accent-press);
+}
+
+/* The set control opens the column's checkbox list: several values at once, and a closed state
+   that states how many are admitted. */
+.dg-ff-set {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  appearance: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dg-ff-set svg {
+  flex: none;
+  color: var(--ink-ghost);
+}
+
+.dg-ff-set.on svg {
+  color: var(--accent-quiet);
+}
+
+.dg-ff-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ================================================================= rows */
+/* One row-height of clearance at the foot, so the last entry can scroll clear of the pinned
+   grand total instead of ending as a half-row under it — and NONE when there is no grand total
+   to clear: --grid-total-h is 0 on a ledger with nothing additive to state. */
+.dg-body {
+  position: relative;
+  padding-bottom: var(--grid-total-h, 0px);
+}
+
+.dg-row {
+  position: relative;
+  height: var(--grid-row-h);
+  border-bottom: 1px solid var(--line-faint);
+}
+
+/* Every cell is opaque: a pinned cell has to hide the row sliding under it, and one rule for all
+   cells is cheaper than a second set for the pinned region that could fall out of step. */
+.dg-c {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: none;
+  min-width: 0;
+  padding: 0 var(--grid-pad-x);
+  background: var(--surface-0);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.dg-c:first-child {
+  padding-left: var(--grid-pad-x-lead);
+}
+
+.dg-c.is-indented {
+  /* One indent step per level. `--dg-depth` is written by the row; the step itself is the density
+     tier's, so a decomposition indents by the same unit a lens group does and DENSITY moves the
+     indent without ever moving the type (§2.1 Law 3). */
+  padding-left: calc(var(--grid-pad-x-lead) + var(--grid-indent) * var(--dg-depth, 1));
+}
+
+/* ------------------------------------------------------------------ hierarchy rows
+   A level of a decomposition is a SUBTOTAL, and §4.2 is explicit about how one reads: a hairline
+   above it and a weight step, never a fill. A filled band at 28px reads as a header, and the
+   reader loses the distinction between the structure of the tree and the top of the table. */
+.dg-row.is-branch {
+  border-top: 1px solid var(--line);
+}
+
+.dg-row.is-branch .dg-c {
+  font-weight: var(--weight-semibold);
+}
+
+/* The disclosure sits at the label's leading edge and takes a fixed advance whether or not it
+   carries a glyph, so every level below it stays on one ruling. */
+.dg-twisty {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-right: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.dg-twisty:hover {
+  color: var(--ink);
+}
+
+.dg-twisty:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.dg-twisty-void {
+  width: 12px;
+  height: 12px;
+}
+
+.al-right {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+/* hover · selection · range · focus — four states, none of them a zebra stripe */
+.dg-row:hover .dg-c {
+  background: var(--surface-2);
+}
+
+.dg-row.is-focus-row .dg-c {
+  background: var(--surface-2);
+}
+
+.dg-row.is-active .dg-c,
+.dg-row.is-selected .dg-c {
+  background: var(--accent-wash-plate);
+}
+
+.dg-row.is-active {
+  border-bottom-color: var(--accent-quiet);
+}
+
+.dg-c.in-range {
+  background: var(--accent-wash-plate);
+}
+
+/* Roving tabindex: the grid is one tab stop, and the focused cell is only marked while the grid
+   actually holds focus — a ring drawn on an unfocused table is a false claim about where the
+   keyboard is. */
+.dg-scroll:focus .dg-c.is-focus,
+.dg-scroll:focus-within .dg-c.is-focus {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+/* Row status: a 3px severity bar inside the pinned region. Never a cell background fill. */
+.dg-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+
+.dg-bar.tone-danger {
+  background: var(--danger);
+}
+
+.dg-bar.tone-warn {
+  background: var(--warn);
+}
+
+.dg-bar.tone-ok {
+  background: var(--ok);
+}
+
+/* ---- pinned regions: the only other vertical strokes in the grid ---- */
+.pin-left,
+.pin-right {
+  position: sticky;
+  z-index: 2;
+}
+
+.dg-c.pin-edge-l,
+.dg-h.pin-edge-l,
+.dg-f.pin-edge-l {
+  border-right: 1px solid var(--line);
+}
+
+.dg-c.pin-edge-r,
+.dg-h.pin-edge-r,
+.dg-f.pin-edge-r {
+  border-left: 1px solid var(--line);
+}
+
+/* The edge cue appears only while there is something hidden under it. */
+.dg-scroll.scrolled-x .pin-edge-l {
+  box-shadow: var(--shadow-frozen);
+}
+
+.dg-scroll.more-x .pin-edge-r {
+  box-shadow: var(--shadow-frozen-r);
+}
+
+/* The same cue, vertical: while rows remain below the fold the grand total carries a shadow on
+   its upper edge. A body that ends flush on a whole row with nine more beneath it and no cue
+   reads as the entire population — the most expensive misreading a register can produce. */
+.dg-scroll.more-y .dg-total .dg-c {
+  box-shadow: var(--shadow-frozen-b);
+}
+
+/* ---- values ----
+ * The value box may shrink; the TEXT inside it ellipsizes. `text-overflow` has no effect on a
+ * flex container, which is why a hard clip mid-glyph was possible at all — the ellipsis has to
+ * live on a block-level text box of its own. */
+.dg-val {
+  display: inline-flex;
+  align-items: baseline;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dg-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dg-val.mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: -0.01em;
+}
+
+/* Absence is stated, never filled in: a dash in the ghost ink, with the reason on the hint. */
+.dg-absent,
+.dg-agg-none {
+  color: var(--ink-ghost);
+}
+
+/* The closing paren's advance width is reserved on positives too, or the decimal axis shifts by
+   one character between a negative row and a positive one. */
+.dg-paren.is-ghost {
+  visibility: hidden;
+}
+
+/* Audit tickmark — a provenance glyph orthogonal to colour and fill. */
+/* ---- variance direction ----
+ * The glyph is small, quiet and ALWAYS present on a variance; the ink is the redundancy. A rise
+ * in a tracked quantity is not a breach, so it takes --warn-ink and not --danger: the danger ramp
+ * is reserved for a state that has actually failed, and spending it on a direction would put the
+ * loudest ink on the page next to a routine movement. */
+.dg-dir {
+  margin-right: 3px;
+  font-size: 7px;
+  line-height: 1;
+  vertical-align: 0.16em;
+}
+
+.dg-dir.dir-up,
+.dg-text.dir-up {
+  color: var(--warn-ink);
+}
+
+.dg-dir.dir-down,
+.dg-text.dir-down {
+  color: var(--ok);
+}
+
+/* §3.3.2 — a coloured value is never multiplied by an opacity; it renders at full ink and carries
+   its confidence in the underline texture and a weight step alone. */
+.dg-text.dir-up,
+.dg-text.dir-down {
+  font-weight: var(--weight-medium);
+  opacity: 1;
+}
+
+.dg-tick {
+  margin-left: 2px;
+  font-size: var(--text-2xs);
+  line-height: 1;
+  color: var(--ink-faint);
+  vertical-align: super;
+}
+
+/* ---- Confidence Treatment inside a dense grid (§3.3) --------------------------------------
+ * The treatment rides on the NUMERAL and never on the row or a fill. The 12px numeral itself is
+ * never hatched — at 28px rows that is unreadable; the rule beneath it carries the texture. */
+.dg .dg-v.emph-faded {
+  text-decoration: underline dotted var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+.dg .dg-v.emph-hatched {
+  text-decoration: none;
+  padding-bottom: 2px;
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--ink-faint) 0 1px,
+    transparent 1px 3px
+  );
+  background-repeat: repeat-x;
+  background-size: 100% 2px;
+  background-position: left bottom;
+}
+
+/* The same three bands for a value that carries ink. No opacity anywhere in this block: the
+   texture of the rule beneath the digits and one weight step carry the whole treatment. */
+.dg .dg-v.emph-ink-solid {
+  font-weight: var(--weight-semibold);
+}
+
+.dg .dg-v.emph-ink-faded {
+  text-decoration: underline dotted var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+.dg .dg-v.emph-ink-hatched {
+  text-decoration: none;
+  padding-bottom: 2px;
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--ink-faint) 0 1px,
+    transparent 1px 3px
+  );
+  background-repeat: repeat-x;
+  background-size: 100% 2px;
+  background-position: left bottom;
+}
+
+/* ---- group rows and totals: a rule and a weight step, never a fill --------------------------
+ * A filled 28px subtotal reads as a second header and the reader loses the top of the table. */
+.dg-grouprow {
+  border-top: 1px solid var(--line);
+}
+
+.dg-grouprow .dg-c {
+  font-weight: var(--weight-semibold);
+}
+
+.dg-grouplabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.dg-grouplabel svg {
+  flex: none;
+  color: var(--ink-faint);
+}
+
+.dg-group-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dg-group-n {
+  flex: none;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-regular);
+  color: var(--ink-faint);
+}
+
+.dg-agg {
+  font-weight: var(--weight-semibold);
+}
+
+.dg-total {
+  position: sticky;
+  /* Set from the measured viewport: the band takes up whatever is left over after a whole number
+     of rows, so the body can never end on a row sliced through its x-height. */
+  height: var(--grid-total-h, var(--grid-row-h));
+  /* Anchored one pixel past the clip edge. The plate's height is not a whole number of pixels, so
+     a sticky row pinned at exactly 0 rasterises half a pixel short and the row behind it bleeds
+     through as a grey smear along the foot of the ledger. The overhang is clipped by the scroll
+     box, so the only thing it changes is that seam. */
+  bottom: -1px;
+  /* Above the pinned regions AND above the sticky header stack: the grand total is the last
+     thing in the grid that may ever be occluded. */
+  z-index: 5;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 0;
+}
+
+.dg-total .dg-c {
+  background: var(--surface-1);
+  font-weight: var(--weight-semibold);
+}
+
+.dg-total-label {
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--ink-muted);
+}
+
+/* ---- empty: name the restriction that produced the emptiness, and offer to lift it ---- */
+.dg-empty {
+  padding: var(--space-8) var(--grid-pad-x-lead);
+  max-width: 560px;
+}
+
+.dg-empty-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+}
+
+.dg-empty-body {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--ink-muted);
+}
+
+/* ================================================================= status bar */
+.dg-status {
+  position: relative;
+  z-index: 6;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  /* 24px, not 28. One line of --text-2xs needs 15; the four reclaimed pixels are the ledger's,
+     and nothing here is a target — every affordance in this bar is a [data-hint], not a click. */
+  height: 24px;
+  padding: 0 var(--space-3);
+  border-top: 1px solid var(--line);
+  background: var(--surface-1);
+  font-size: var(--text-2xs);
+  color: var(--ink-muted);
+}
+
+.dg-status-l,
+.dg-status-r {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* All of the shrink is pushed into the LEFT group, whose footnote is built to ellipsize. The
+   right group holds the tickmark legend, the as-of and the calibration line — three statements
+   that mean nothing half-printed, so the bar shortens the scope note rather than truncating a
+   provenance claim. */
+.dg-status-l {
+  flex: 0 1 auto;
+  overflow: hidden;
+}
+
+.dg-status-r {
+  flex: none;
+}
+
+.dg-status-b {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.dg-status-v {
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+}
+
+.dg-status-v.mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-regular);
+}
+
+.dg-status-of {
+  font-weight: var(--weight-regular);
+  color: var(--ink-faint);
+}
+
+/* The derived calibration line — what turns a hatched screen from a rendering fault into the
+   product's central claim. Computed from the live payload, never a constant. */
+/* `flex: none`, deliberately. On a narrow grid (an inspector docked beside it) the status bar
+   overflows, and with every child shrinking equally the calibration line was the one clipped —
+   "8 in 10 values hatch…". That is the sentence that turns a hatched screen from a rendering
+   fault into the product's claim, so it is the last thing allowed to yield: the surface's own
+   footnote absorbs the shrink instead. */
+.dg-status-cal {
+  flex: none;
+  white-space: nowrap;
+  color: var(--ink-quiet);
+}
+
+.dg-seek {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--accent-press);
+}
+
+.dg-note {
+  color: var(--ink-quiet);
+}
+
+/* ---- tickmark legend: permanent in the footer, never only in a tooltip ----
+ * It lives ON the status bar rather than in a band of its own: a second 24px strip to carry two
+ * glyphs costs a row of the ledger on every screen, and the calibration line it belongs beside
+ * is already here. */
+.dg-tickkey {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.dg-tickkey-i {
+  white-space: nowrap;
+}
+
+.dg-tickkey-i .dg-tick {
+  vertical-align: baseline;
+  margin-left: 0;
+  color: var(--ink);
+}
+
+.dg-tickkey-i .dg-tick {
+  font-size: var(--text-2xs);
+}
+
+/* the register's own scope statement — what the ledger admits, and out of what population */
+/* `0 1 auto`: the footnote SHRINKS to protect the calibration line beside it, and never GROWS
+   — growing pushed the whole right-hand group off the end of a narrow bar. */
+.dg-footnote {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-faint);
+}
+
+.dg-status-note {
+  color: var(--ink-faint);
+}
+
+.dg-status-note::before {
+  content: "· ";
+}
+
+/* ================================================================= column menu */
+.dg-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+}
+
+.dg-menu {
+  position: fixed;
+  z-index: calc(var(--z-overlay) + 1);
+  width: 260px;
+  max-height: 62vh;
+  overflow: auto;
+  padding: var(--space-2) 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-3);
+  box-shadow: var(--shadow-pop);
+}
+
+.dg-menu-title {
+  padding: 0 var(--space-3) var(--space-1);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  color: var(--ink);
+}
+
+.dg-menu-i {
+  display: block;
+  width: 100%;
+  padding: 5px var(--space-3);
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-xs);
+  text-align: left;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.dg-menu-i:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.dg-menu-rule {
+  height: 0;
+  margin: var(--space-1) 0;
+  border: 0;
+  border-top: 1px solid var(--line-faint);
+}
+
+.dg-menu-sub {
+  padding: var(--space-1) var(--space-3);
+}
+
+.dg-menu-search,
+.dg-panel-search {
+  width: calc(100% - var(--space-6));
+  height: 24px;
+  margin: 0 var(--space-3) var(--space-1);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-inset);
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--ink);
+}
+
+.dg-menu-set {
+  max-height: 210px;
+  overflow: auto;
+}
+
+.dg-menu-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.dg-menu-check:hover {
+  background: var(--surface-2);
+}
+
+.dg-menu-check input {
+  accent-color: var(--accent);
+}
+
+.dg-menu-checklabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dg-menu-checkn {
+  color: var(--ink-faint);
+}
+
+/* ================================================================= column panel
+ * A 300px dock, not a slide-over. Its own rows are 28px and do NOT follow grid density — the
+ * panel is chrome and must stay legible when the grid is set compact. */
+.dg-panel {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  border-left: 1px solid var(--line);
+  background: var(--surface-0);
+}
+
+.dg-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.dg-panel-search {
+  margin-top: var(--space-2);
+}
+
+.dg-panel-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.dg-panel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  height: 28px;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--line-faint);
+}
+
+.dg-panel-row:hover {
+  background: var(--surface-2);
+}
+
+.dg-panel-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  font-size: var(--text-xs);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.dg-panel-check input {
+  accent-color: var(--accent);
+}
+
+.dg-panel-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dg-panel-ctl {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+.dg-mini {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--surface-0);
+  font: inherit;
+  font-size: var(--text-2xs);
+  line-height: 1;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.dg-mini:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.dg-mini-sel {
+  height: 20px;
+  padding: 0 2px;
+  font-size: var(--text-2xs);
+}
+
+.dg-panel-foot {
+  flex: none;
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--line-faint);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-snug);
+  color: var(--ink-faint);
+}
+
+/* ================================================================= keyboard overlay */
+.dg-help-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: grid;
+  place-items: center;
+  padding: var(--space-8);
+  background: var(--surface-scrim);
+}
+
+.dg-help-card {
+  width: min(1000px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-3);
+  box-shadow: var(--shadow-3);
+}
+
+.dg-help-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.dg-help-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+}
+
+.dg-help-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-6);
+  padding: var(--space-4);
+}
+
+.dg-help-sub {
+  margin-bottom: var(--space-2);
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--line-faint);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.dg-help-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: 2px 0;
+}
+
+.dg-help-keys {
+  flex: none;
+  width: 118px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--ink);
+}
+
+.dg-help-does {
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  color: var(--ink-muted);
+}
+
+.dg-help-foot {
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  border-top: 1px solid var(--line-faint);
+  font-size: var(--text-2xs);
+  color: var(--ink-faint);
+}

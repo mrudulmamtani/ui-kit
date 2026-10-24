@@ -1,0 +1,251 @@
+.topbar {
+  flex: none;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: 0 var(--space-6);
+  border-bottom: 1px solid var(--line);
+  /* Opaque paper. The bar sits ABOVE its own scroll region, so nothing ever passes under it —
+     a translucent, blurred bar bought no information and read as glassmorphism (§0.1). */
+  background: var(--surface-0);
+}
+
+/* The type line. Headline, standfirst and every basis label and value sit on ONE baseline you
+   could lay a straight edge along, from the left margin to the last figure. It is a running head,
+   not a band of stacked plates. */
+.topbar-line {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.topbar-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* The route name is the document headline — editorial serif, set large enough to
+   anchor the page. The standfirst beside it stays instrument sans and quiet. */
+.topbar-title h1 {
+  font-family: var(--font-display);
+  font-size: 1.3125rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.017em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.topbar-desc {
+  position: relative;
+  padding-left: var(--space-3);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* hairline separating headline from standfirst — a typesetter's rule, not a bullet */
+.topbar-desc::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 11px;
+  background: var(--line-strong);
+  transform: translateY(-50%);
+}
+
+/* ------------------------------------------------------------------ basis line
+ * The frame's standing answer to "on what basis?" — set as a RUNNING LINE, label and value on one
+ * baseline, fields divided by hairlines. It is deliberately NOT a stacked label-over-value plate in
+ * uppercase: a page that opens with exactly that form 40px below turns the chrome into a smaller
+ * copy of the page — the same fact, the same caps, twice within 100px, reading as the frame
+ * restating the page rather than framing it. Eyebrow caps belong to the PAGE.
+ * The frame speaks in a running head: sentence-case labels in quiet ink, values in full ink.
+ * Nothing here is clickable and nothing here may look like a toolbar. */
+/* Field spacing is tight on purpose. The running head has to seat a serif headline, a standfirst,
+   three basis fields and the search entry inside one 1254px band at the reference width, and the
+   first thing to give was the standfirst — which came back with an ellipsis in it. A running head
+   that cannot state a route's own definition without truncating it is not finished. */
+.tb-basis {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex: none;
+}
+
+.tb-fact {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* ONE divider treatment in the running head, used three times: the same 11px centred hairline
+   that separates the headline from its standfirst separates each basis field from the next. A
+   full-height border here read as a second, heavier kind of rule on the same line of type. */
+.tb-fact + .tb-fact {
+  position: relative;
+  padding-left: var(--space-3);
+}
+
+.tb-fact + .tb-fact::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 11px;
+  background: var(--line-strong);
+  transform: translateY(-50%);
+}
+
+.tb-fact dt {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  letter-spacing: 0;
+  color: var(--ink-quiet);
+  white-space: nowrap;
+}
+
+.tb-value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* the position date is a recorded stamp, not prose — it reads in the data face */
+.tb-value-date {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0;
+}
+
+/* the calibration figure that travels with basis confidence (§3b) */
+.tb-calibration {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-regular);
+  color: var(--ink-quiet);
+}
+
+.tb-unavailable {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-regular);
+  color: var(--ink-quiet);
+}
+
+/* holds the column while the record loads — a rule, not a shimmering block */
+.tb-pending {
+  display: block;
+  width: 52px;
+  height: 2px;
+  border-radius: var(--radius-xs);
+  background: var(--line);
+  animation: tb-pending-pulse 1.6s var(--ease-in-out-quad) infinite;
+}
+
+@keyframes tb-pending-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-pending {
+    animation: none;
+  }
+}
+
+/* the Metric primitive inside the ledger is set at chrome scale, not figure scale */
+.tb-value .metric {
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+/* ------------------------------------------------------------------ omni search */
+.omni {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: none;
+  width: min(240px, 21vw);
+  height: 34px;
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-inset);
+  color: var(--ink-quiet);
+  transition:
+    border-color var(--dur-micro) var(--ease-out-quad),
+    background var(--dur-micro) var(--ease-out-quad),
+    color var(--dur-micro) var(--ease-out-quad);
+}
+
+.omni-icon {
+  flex: none;
+  color: var(--ink-faint);
+}
+
+.omni:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-1);
+  color: var(--ink);
+}
+
+.omni-label {
+  flex: 1;
+  text-align: left;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.omni-kbd,
+kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-2xs);
+  line-height: 1;
+}
+
+/* Narrow frames drop the least load-bearing field first — order the fields so the one a reader
+   is most likely to be WRONG about survives longest. */
+@media (max-width: 1240px) {
+  .tb-basis > .tb-fact:first-child {
+    display: none;
+  }
+  .tb-fact + .tb-fact:nth-child(2) {
+    padding-left: 0;
+  }
+  .tb-fact + .tb-fact:nth-child(2)::before {
+    content: none;
+  }
+}
+
+@media (max-width: 1020px) {
+  .tb-basis {
+    display: none;
+  }
+}

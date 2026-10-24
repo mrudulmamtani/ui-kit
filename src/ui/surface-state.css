@@ -1,0 +1,131 @@
+.surface-loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  position: relative;
+}
+
+.skel-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+.skel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+/* The skeleton is HELD BACK for a beat. A record that arrives in under a fifth of a second should
+   never make the reader watch a shimmer appear and vanish — the flash reads as a fault. `both`
+   keeps it at zero through the delay, so a fast load goes straight to content. */
+.surface-loading {
+  animation: skel-hold var(--dur-fast) var(--ease-out-quad) 200ms both;
+}
+
+@keyframes skel-hold {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Skeletons read as the plates they will become: hairline-bordered white panels with a
+   slow, low-contrast sweep. On paper a loud shimmer looks broken, not busy. */
+.skel {
+  border: 1px solid var(--line-faint);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    100deg,
+    var(--surface-0) 30%,
+    var(--surface-2) 50%,
+    var(--surface-0) 70%
+  );
+  background-size: 220% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.skel-kpi {
+  height: 108px;
+}
+.skel-panel {
+  height: 230px;
+}
+.skel-panel.wide {
+  grid-column: span 2;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 180% 0;
+  }
+  to {
+    background-position: -80% 0;
+  }
+}
+
+.surface-loading-label {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel {
+    animation: none;
+  }
+}
+
+/* ---- message states ---- */
+.surface-msg {
+  display: grid;
+  place-items: center;
+}
+
+.msg-card {
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.msg-card h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.015em;
+}
+
+.msg-icon.danger {
+  color: var(--danger);
+}
+
+.msg-hint {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.msg-hint code {
+  color: var(--ink-muted);
+  background: var(--surface-inset);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+@media (max-width: 1080px) {
+  .skel-kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .skel-grid {
+    grid-template-columns: 1fr;
+  }
+  .skel-panel.wide {
+    grid-column: span 1;
+  }
+}

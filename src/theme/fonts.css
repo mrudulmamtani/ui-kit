@@ -1,0 +1,14 @@
+/*
+ * Typeface loading. Self-hosted (no network at runtime), variable axes only.
+ *
+ *   Inter          — the instrument voice: UI chrome, labels, dense table cells.
+ *   Source Serif 4 — the editorial voice: page titles, section headlines, report prose.
+ *   JetBrains Mono — the record voice: ids, codes, timestamps, raw values.
+ *
+ * See tokens.css → --font-sans / --font-display / --font-mono for the usage law.
+ */
+@import "@fontsource-variable/inter/index.css";
+@import "@fontsource-variable/inter/opsz.css";
+@import "@fontsource-variable/source-serif-4/index.css";
+@import "@fontsource-variable/source-serif-4/opsz.css";
+@import "@fontsource-variable/jetbrains-mono/index.css";

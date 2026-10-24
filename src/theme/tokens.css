@@ -1,0 +1,323 @@
+/*
+ * Design Tokens — the single source of visual truth.
+ *
+ * SKIN: "Institutional Light". Paper-white canvas, deep navy ink, one institutional blue
+ * reserved for state, an editorial serif for headline hierarchy, and rectilinear geometry.
+ * Nothing candy, nothing neon, nothing playful. The page should read like a partner-grade
+ * document that happens to be live.
+ *
+ * Three laws govern everything below:
+ *   - Neutral, low-chroma canvas. Colour is reserved for STATE (selection / emphasis /
+ *     attention) and for ENCODED DATA. Never for decoration.
+ *   - Typographic hierarchy mirrors information hierarchy. Data reads in tabular numerals.
+ *   - Motion maps 1:1 to an interaction primitive; each duration and curve names its purpose.
+ *
+ * Every surface MUST consume these tokens. No raw hex/oklch in components.
+ * Colours are in OKLCH and have been contrast-audited — run `python scripts/contrast_audit.py`
+ * after any change rather than eyeballing it. Light canvases are deceptive.
+ */
+:root {
+  color-scheme: light;
+
+  /* ---------------------------------------------------------------- surfaces
+   * A cool paper ladder (hue 250, near-zero chroma). On light, depth comes from
+   * HAIRLINES + tiny shadows, never from big tonal jumps: the ladder is deliberately
+   * compressed so panels read as printed plates on a desk, not as floating cards. */
+  --surface-void: oklch(0.967 0.0035 250); /* app background / canvas emptiness */
+  --surface-0: oklch(1 0 0); /* base panel — paper white */
+  --surface-1: oklch(0.986 0.002 250); /* card / rail */
+  --surface-2: oklch(0.958 0.004 250); /* raised: popover, menu, hovered row */
+  --surface-3: oklch(1 0 0); /* overlay: command palette, dialog (white + shadow-3) */
+  --surface-inset: oklch(0.972 0.004 250); /* wells: inputs, code, scroll track */
+  --surface-scrim: oklch(0.235 0.03 245 / 0.28); /* modal / overlay backdrop */
+
+  /* Inverted band — the navy plate used for mastheads, key figures, and the nav rail
+   * foot. The single most "institutional" move available on a light canvas. Use it
+   * deliberately and rarely; as ambient decoration it cheapens instantly. */
+  --surface-ink: oklch(0.235 0.03 245);
+  --surface-ink-1: oklch(0.295 0.032 245); /* raised within an inverted band */
+  --surface-ink-line: oklch(0.36 0.03 245); /* hairline within an inverted band */
+
+  /* hairlines — structure without weight. On light these carry ALL the structure. */
+  --line-faint: oklch(0.928 0.004 250);
+  --line: oklch(0.888 0.006 250);
+  --line-strong: oklch(0.80 0.009 250);
+
+  /* ---------------------------------------------------------------- ink
+   * Deep-sea navy, never pure black — black on white is glaring at density. */
+  --ink: oklch(0.235 0.03 245);
+  --ink-muted: oklch(0.435 0.022 248);
+  --ink-faint: oklch(0.558 0.016 250);
+  --ink-ghost: oklch(0.63 0.012 250); /* floor: clears 3.0 on void AND hover-row, not just white */
+  /* AA-guaranteed quiet ink. --ink-faint is 4.5001:1 on --surface-1 — it clears AA on a bare
+   * plate by four ten-thousandths and FAILS the moment the same caption sits in an interactive
+   * row (4.15 on --surface-2 hover, 4.06 on an --accent-wash selected row). --ink-quiet is the
+   * lightest navy that still clears 4.5:1 on all three (5.28 / 4.94 / 4.77). Use it for meta,
+   * captions and secondary values INSIDE rows; --ink-ghost stays for non-text rules only. */
+  --ink-quiet: oklch(0.52 0.016 250);
+  --ink-inverse: oklch(0.985 0.002 250); /* text on --surface-ink */
+  --ink-inverse-muted: oklch(0.80 0.012 250);
+  --ink-on-accent: oklch(0.995 0 0);
+
+  /* ------------------------------------------- accent — STATE ONLY (institutional blue)
+   * Selection, emphasis, attention, focus. Used sparingly and with intent — never
+   * as ambient wash or decorative fill.
+   *
+   * THIS IS THE ONE TOKEN TO RETUNE FIRST when giving the kit its own identity. Keep the
+   * lightness near 0.505 so the audited on-accent and wash contrasts hold; move the hue. */
+  --accent: oklch(0.505 0.205 262);
+  --accent-hover: oklch(0.452 0.205 262);
+  --accent-press: oklch(0.408 0.19 262);
+  --accent-quiet: oklch(0.62 0.16 262); /* de-emphasised accent: icons, rules */
+  --accent-wash: oklch(0.505 0.205 262 / 0.07); /* selected-row / active-chip bg */
+  --accent-wash-strong: oklch(0.505 0.205 262 / 0.15);
+  --accent-ring: oklch(0.505 0.205 262 / 0.45);
+  --accent-glow: oklch(0.505 0.205 262 / 0.3); /* reserved: attention pulse only */
+  /* Opaque equivalents of the two washes, composited over --surface-0. A translucent selection
+     smears the moment it sits on a STICKY element (a frozen grid column, a pinned header): the
+     scrolled content passes underneath and shows through. These are the same colours, flattened. */
+  --accent-wash-plate: oklch(0.9642 0.0128 264);
+  --accent-wash-plate-strong: oklch(0.9232 0.0279 264);
+
+  /* ---------------------------------------------------------------- semantic status
+   * Functional meaning only (health, verification, alarm, information). All calibrated
+   * to hold WCAG AA as TEXT on --surface-0, so a status word never needs a fill to read. */
+  --ok: oklch(0.505 0.125 158);
+  --ok-wash: oklch(0.505 0.125 158 / 0.1);
+  --warn: oklch(0.545 0.115 68);
+  /* Amber as a VALUE, not a badge. --warn is 4.89:1 on --surface-1 and collapses to 2.65:1 the
+   * instant a value-emphasis tier multiplies it by --emph-faded (0.66) — that multiplier was
+   * calibrated for navy (0.66 of --ink = 5.30:1) and does not transfer to a light hue. Amber
+   * figures therefore render at FULL ink in --warn-ink (7.66:1 on --surface-1, 6.91 on an
+   * accent-wash row) and carry emphasis in texture/weight instead of opacity. */
+  --warn-ink: oklch(0.44 0.13 68);
+  --warn-wash: oklch(0.545 0.115 68 / 0.11);
+  --danger: oklch(0.512 0.196 27);
+  --danger-wash: oklch(0.512 0.196 27 / 0.09);
+  --info: oklch(0.518 0.115 240);
+  --info-wash: oklch(0.518 0.115 240 / 0.09);
+
+  /* ---------------------------------------------------------------- value emphasis
+   * How well-evidenced a figure is, carried in OPACITY and TEXTURE rather than hue —
+   * hue is already spent on state and on encoded data. Pair with `.emph-solid` /
+   * `.emph-faded` / `.emph-hatched` in base.css, or `<Metric>` in ui/primitives.tsx.
+   * On light, "faded" must not drop below AA — 0.66 of navy on white still passes, which
+   * is the floor these three values are pinned to. Do not lower them without re-auditing. */
+  --emph-solid: 1;
+  --emph-faded: 0.66;
+  --emph-hatched: 0.66;
+
+  /* ================================================================ ENCODED DATA RAMPS
+   * Optional. Delete any ramp this product does not actually encode — an unused ramp is
+   * an invitation to decorate with it. Each ramp owns exactly one meaning; hue is a scarce
+   * resource. All are calibrated so they order correctly in GRAYSCALE and for colour-vision-
+   * deficient readers, which is what makes them data rather than mood.
+   * ================================================================ */
+
+  /* ---- categorical (series / domains) ----------------------------------------
+   * Muted and DARK so every series holds AA as a 1px stroke or a text label on paper.
+   * No series may shout over the data. Eight is the ceiling; past that, stop using hue. */
+  --cat-1: oklch(0.485 0.135 258);
+  --cat-2: oklch(0.495 0.105 168);
+  --cat-3: oklch(0.545 0.115 72);
+  --cat-4: oklch(0.515 0.155 32);
+  --cat-5: oklch(0.475 0.145 305);
+  --cat-6: oklch(0.505 0.09 216);
+  --cat-7: oklch(0.525 0.105 132);
+  --cat-8: oklch(0.495 0.14 348);
+
+  /* ---- sequential magnitude ---------------------------------------------------
+   * For coverage / concentration / density matrices. Strictly MONOTONIC FALLING
+   * lightness (0.965 -> 0.415) so an empty cell is indistinguishable from paper and
+   * magnitude accrues as deposited ink. Hue drifts only slightly (250 -> 264) — this is
+   * one material getting denser, not a rainbow. */
+  --seq-0: oklch(0.965 0.006 250);
+  --seq-1: oklch(0.895 0.035 254);
+  --seq-2: oklch(0.815 0.075 257);
+  --seq-3: oklch(0.715 0.125 260);
+  --seq-4: oklch(0.555 0.175 262); /* darkened so paper ink clears AA (4.74:1) */
+  --seq-5: oklch(0.415 0.165 264);
+  /* on-fill text: navy on the four pale bins, paper on the two dense bins. The crossover
+   * sits between bin 3 and bin 4 — measured, not guessed: paper ink on bin 3 is only
+   * 2.47:1 and fails, while navy on it clears 6.49:1. */
+  --seq-0-ink: var(--ink);
+  --seq-1-ink: var(--ink);
+  --seq-2-ink: oklch(0.24 0.06 257);
+  --seq-3-ink: oklch(0.24 0.06 257);
+  --seq-4-ink: oklch(0.99 0.005 262);
+  --seq-5-ink: oklch(0.985 0.005 264);
+
+  /* ---- sequential wash --------------------------------------------------------
+   * The same progression held entirely at the wash end, for when the plate is a DRAWING
+   * whose structure is hairlines and alignment and may not become a saturated slab. The
+   * top bin is a ~13% tint; every bin takes --ink (worst case 12.4:1). Magnitude the tint
+   * can no longer carry is carried by the plate's left rule instead. */
+  --wash-0: oklch(0.985 0.002 250);
+  --wash-1: oklch(0.945 0.018 254);
+  --wash-2: oklch(0.9 0.036 257);
+  --wash-3: oklch(0.855 0.055 259);
+
+  /* ---- diverging --------------------------------------------------------------
+   * Two directions away from a neutral midpoint (below target <- on target -> above
+   * target). Endpoints dark enough to read as fills on paper; midpoint deliberately
+   * desaturated so "balanced" never competes for attention. */
+  --div-neg-2: oklch(0.45 0.14 250);
+  --div-neg-1: oklch(0.60 0.09 232);
+  --div-mid: oklch(0.86 0.012 250);
+  --div-pos-1: oklch(0.66 0.11 62);
+  --div-pos-2: oklch(0.52 0.17 38);
+
+  /* ---- ordinal severity -------------------------------------------------------
+   * A SINGLE-HUE ordinal scale: one red at rising chroma and falling lightness, from
+   * near-neutral (unclassified) to the alarm red at --danger (critical). Single-hue on
+   * purpose — a ramp that passes through green cannot help reading as a success state
+   * beside a row that is merely unclassified.
+   * The ramp is given a VISIBLE FLOOR: below L 0.78 the lowest steps resolve against a
+   * white plate only as a smudge, so a 3px mark on the majority of rows reads as dirt at
+   * the table's edge rather than as an encoding. A mark a reader cannot see must not be
+   * drawn. Marks only — never a text backdrop, so no on-fill ink pair is needed. */
+  --sev-0: oklch(0.780 0.008 250);
+  --sev-1: oklch(0.745 0.048 30);
+  --sev-2: oklch(0.690 0.088 29);
+  --sev-3: oklch(0.628 0.130 28);
+  --sev-4: oklch(0.566 0.168 27);
+  --sev-5: oklch(0.505 0.196 27);
+
+  /* ---------------------------------------------------------------- typography
+   * Two voices, strictly divided:
+   *   --font-display (Source Serif 4) — EDITORIAL. Page titles, section headlines,
+   *     hero figures, long-form prose. It is what makes the product read as a document.
+   *   --font-sans (Inter) — INSTRUMENT. All UI chrome, labels, table cells, controls.
+   *   --font-mono (JetBrains Mono) — ids, timestamps, codes, raw values.
+   * Never set body copy in the serif at UI sizes; never set a headline in the sans.
+   *
+   * Swapping --font-serif is the single highest-leverage way to give this kit a different
+   * identity while keeping its discipline. The serif/sans division is the character. */
+  --font-sans: "Inter Variable", "Inter", -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+  --font-serif: "Source Serif 4 Variable", "Source Serif 4", Charter, Georgia, "Times New Roman",
+    serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", "SF Mono", "Cascadia Code", ui-monospace,
+    monospace;
+  --font-display: var(--font-serif);
+
+  --text-2xs: 0.6875rem; /* 11 — micro labels, legend */
+  --text-xs: 0.75rem; /* 12 — captions, eyebrows */
+  --text-sm: 0.8125rem; /* 13 — UI base */
+  --text-md: 0.9375rem; /* 15 — body, dense table cell emphasis */
+  --text-lg: 1.125rem; /* 18 — panel titles */
+  --text-xl: 1.375rem; /* 22 — section headers */
+  --text-2xl: 1.75rem; /* 28 — page titles */
+  --text-3xl: 2.25rem; /* 36 — hero metric */
+  --text-display: 3rem; /* 48 — landing figure */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 560;
+  --weight-bold: 660;
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+
+  --tracking-tight: -0.011em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.04em;
+  --tracking-caps: 0.1em; /* uppercase eyebrows */
+
+  /* ---------------------------------------------------------------- space (4px base) */
+  --space-0: 0;
+  --space-1: 0.25rem; /* 4 */
+  --space-2: 0.5rem; /* 8 */
+  --space-3: 0.75rem; /* 12 */
+  --space-4: 1rem; /* 16 */
+  --space-5: 1.25rem; /* 20 */
+  --space-6: 1.5rem; /* 24 */
+  --space-8: 2rem; /* 32 */
+  --space-10: 2.5rem; /* 40 */
+  --space-12: 3rem; /* 48 */
+  --space-16: 4rem; /* 64 */
+
+  /* ---------------------------------------------------------------- radii
+   * Rectilinear. A document is set on a grid of rectangles; soft pill-shaped chrome reads
+   * consumer. Pill is reserved for status dots and the few genuine toggle affordances. */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 10px;
+  --radius-pill: 999px;
+
+  /* ---------------------------------------------------------------- elevation
+   * Light UIs earn depth from a hairline plus the faintest navy-tinted shadow.
+   * If a shadow is visible as a shadow, it is too strong. */
+  --shadow-1: 0 1px 2px oklch(0.235 0.03 245 / 0.06);
+  --shadow-2:
+    0 2px 6px oklch(0.235 0.03 245 / 0.07), 0 1px 2px oklch(0.235 0.03 245 / 0.05);
+  --shadow-3:
+    0 12px 28px oklch(0.235 0.03 245 / 0.11), 0 2px 6px oklch(0.235 0.03 245 / 0.06);
+  --shadow-pop:
+    0 16px 44px oklch(0.235 0.03 245 / 0.15), 0 2px 8px oklch(0.235 0.03 245 / 0.07),
+    0 0 0 1px var(--line);
+  --shadow-panel: -14px 0 36px oklch(0.235 0.03 245 / 0.07);
+  /* The frozen-column edge of a spreadsheet grid. Not elevation — it is the one cue that says
+     "the columns to the left are pinned and the rest has scrolled under them", and a hairline
+     alone cannot say it because every gridline is already a hairline. Held to 4px at 12%: at 6px
+     and 20% it read across an empty row as a grey smear, and a shadow legible AS a shadow is
+     already too strong on this register. */
+  --shadow-frozen: 4px 0 4px -3px oklch(0.235 0.03 245 / 0.12);
+  /* The same cue mirrored for a RIGHT-pinned region, shown until the grid is scrolled to its end. */
+  --shadow-frozen-r: -4px 0 4px -3px oklch(0.235 0.03 245 / 0.12);
+  /* The vertical twin, carried on the underside of a pinned grand total while rows remain below
+     the fold. It says "the ledger continues" and nothing more. Without it a body that ends flush
+     on a row boundary reads as the whole population. */
+  --shadow-frozen-b: 0 -4px 4px -3px oklch(0.235 0.03 245 / 0.12);
+
+  /* ---------------------------------------------------------------- data grid geometry
+   * The three density tiers of the data grid. A density change moves THESE custom properties
+   * and nothing else — type size, icon size, hairline weight and ink are identical at every
+   * tier, so a tier can never produce an illegible grid. The values below are the STANDARD
+   * tier and the default for any grid that does not set one; `<DataGrid>` writes the compact /
+   * relaxed values onto its own root, so the two axes cannot drift. */
+  --grid-row-h: 28px;
+  --grid-header-h: 32px;
+  --grid-filter-h: 28px;
+  --grid-pad-x: var(--space-2); /* 8 */
+  --grid-pad-x-lead: var(--space-3); /* 12 — the leading identifier column */
+  --grid-indent: 16px; /* one level of group indent */
+
+  /* ---------------------------------------------------------------- motion
+   * Curves and durations named by intent. A motion token with no named cause is decoration. */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1); /* panel disclosure, general */
+  --ease-out-quad: cubic-bezier(0.5, 1, 0.89, 1); /* pan, micro fade-in */
+  --ease-in-out-quad: cubic-bezier(0.45, 0, 0.55, 1); /* glide, emphasis pulse */
+  --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1); /* zoom / retrace */
+
+  --dur-micro: 120ms; /* toggle cross-fade, hover */
+  --dur-fast: 180ms; /* focus flash, glance card */
+  --dur-panel: 260ms; /* inspector slide-in */
+  --dur-cam: 480ms; /* viewport transition band midpoint */
+  --dur-pulse: 400ms; /* the emphasis pulse — always played exactly twice, never looped */
+
+  /* ---------------------------------------------------------------- layout */
+  --rail-w: 258px; /* sized to seat the full masthead + collapse control without collision */
+  --rail-w-collapsed: 60px;
+  --inspector-w: 384px;
+  --topbar-h: 56px;
+  --z-canvas: 0;
+  --z-hud: 20;
+  --z-panel: 40;
+  --z-topbar: 50;
+  --z-overlay: 60;
+  --z-toast: 80;
+  --z-tooltip: 90;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-micro: 0.01ms;
+    --dur-fast: 0.01ms;
+    --dur-panel: 0.01ms;
+    --dur-cam: 0.01ms;
+    --dur-pulse: 0.01ms;
+  }
+}

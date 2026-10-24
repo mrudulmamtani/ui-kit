@@ -1,0 +1,207 @@
+/* ------------------------------------------------------------------- Panel */
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--surface-0);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--line-faint);
+}
+
+.panel-head-titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* Section headline — editorial serif, matching the route headline one step down.
+   This is what makes a screen read as a page of a document rather than a card wall. */
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.014em;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+}
+
+.panel-body {
+  padding: var(--space-5);
+  min-height: 0;
+}
+
+.panel-body.flush {
+  padding: 0;
+}
+
+/* -------------------------------------------------------------------- Chip */
+/* Squared, not pill. A pill reads consumer; a rectangle reads as a field on a form. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 20px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--line);
+  background: var(--surface-1);
+  color: var(--ink-muted);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  white-space: nowrap;
+}
+
+.chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.tone-accent {
+  color: var(--accent);
+  border-color: color-mix(in oklch, var(--accent) 40%, var(--line));
+  background: var(--accent-wash);
+}
+.tone-ok {
+  color: var(--ok);
+  border-color: color-mix(in oklch, var(--ok) 34%, var(--line));
+  background: var(--ok-wash);
+}
+.tone-warn {
+  color: var(--warn);
+  border-color: color-mix(in oklch, var(--warn) 34%, var(--line));
+  background: var(--warn-wash);
+}
+.tone-danger {
+  color: var(--danger);
+  border-color: color-mix(in oklch, var(--danger) 40%, var(--line));
+  background: var(--danger-wash);
+}
+.tone-info {
+  color: var(--info);
+  border-color: color-mix(in oklch, var(--info) 34%, var(--line));
+  background: var(--info-wash);
+}
+
+/* ------------------------------------------------------------------ Button */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  transition:
+    background var(--dur-micro) var(--ease-out-quad),
+    border-color var(--dur-micro) var(--ease-out-quad),
+    color var(--dur-micro) var(--ease-out-quad);
+}
+
+.btn-md {
+  height: 32px;
+  padding: 0 var(--space-4);
+}
+.btn-sm {
+  height: 26px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.btn-icon {
+  display: inline-flex;
+  margin-left: -2px;
+}
+
+.btn-default {
+  border: 1px solid var(--line-strong);
+  background: var(--surface-1);
+  color: var(--ink);
+}
+.btn-default:hover {
+  background: var(--surface-2);
+  border-color: var(--ink-ghost);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--ink-on-accent);
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-ghost {
+  color: var(--ink-muted);
+}
+.btn-ghost:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------ Metric */
+.metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.metric-value {
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.metric-unit {
+  color: var(--ink-faint);
+  font-size: 0.7em;
+  font-weight: var(--weight-medium);
+}
+
+.metric-sm .metric-value {
+  font-size: var(--text-md);
+}
+.metric-md .metric-value {
+  font-size: var(--text-xl);
+}
+
+/* Headline figures are set in the editorial serif with lining tabular figures — the
+   "key number" of a consulting page. Dense in-table metrics stay sans (above) so
+   columns of small values keep the instrument voice. */
+.metric-lg .metric-value,
+.metric-xl .metric-value {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.metric-lg .metric-value {
+  font-size: var(--text-2xl);
+}
+.metric-xl .metric-value {
+  font-size: var(--text-3xl);
+}

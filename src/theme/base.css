@@ -1,0 +1,291 @@
+/*
+ * Base layer — resets, element defaults, and cross-cutting primitives (focus, scrollbars,
+ * selection, instant tooltips). Everything here reads from tokens.css. Component CSS builds on it.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  min-width: 360px;
+  background: var(--surface-void);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  /* NOTE: no -webkit-font-smoothing: antialiased. On a light canvas it strips stem
+     weight and makes dense tables look anaemic; subpixel rendering is correct here. */
+  font-optical-sizing: auto;
+  font-feature-settings:
+    "cv05" 1,
+    "ss03" 1; /* Inter: open-tailed l, curved r — reads less geometric, more editorial */
+  overflow: hidden; /* the app owns its own scroll regions */
+}
+
+/* The editorial voice. Page titles, section headlines, hero figures, report prose.
+   Serif carries hierarchy so the sans can stay quiet and uniform across dense chrome. */
+.display {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  color: var(--ink);
+  font-optical-sizing: auto;
+}
+
+/* numerals in data contexts align in columns and never reflow on change */
+.tnum,
+table,
+.metric,
+.data {
+  font-variant-numeric: tabular-nums;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+svg {
+  display: block;
+}
+
+img,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--accent-wash-strong);
+  color: var(--ink);
+}
+
+/* focus — keyboard only, never on mouse press.
+   Solid accent, not --accent-ring: at 45% alpha the ring composites to 2.09:1 against
+   paper and fails the 3:1 that WCAG requires of a focus indicator. Solid measures 6.14:1
+   on a plate and 5.59:1 on the canvas, and reads crisper besides. */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* Inside dense chrome a 2px offset lands on the neighbouring row and the ring reads as a smear.
+   The frame's own controls take a tight ring INSIDE their real geometry — and only the offset is
+   restated. The rule used to set `border-radius` too, which mutated the control itself on focus
+   (the omni search field snapped from 4px corners to 3px and needed its own counter-rule to snap
+   back). A focus ring must state where focus is and change nothing else, so every element in the
+   frame now takes the identical inset ring drawn on the corners it already has. */
+.nav-item:focus-visible,
+.wordmark:focus-visible,
+.icon-btn:focus-visible,
+.omni:focus-visible,
+.palette-row:focus-visible {
+  outline-offset: -1px;
+}
+
+/* ---------------------------------------------------------------- scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--radius-pill);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--line-strong);
+  background-clip: padding-box;
+}
+
+/* ---------------------------------------------------------------- typography utilities */
+.eyebrow {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--ink-muted);
+}
+
+.faint {
+  color: var(--ink-faint);
+}
+
+/* Value-emphasis tiers — how well-evidenced a number is, carried in OPACITY and TEXTURE
+   rather than hue (hue is spent on state and on encoded metrics). Apply one to every
+   derived or estimated figure so a reader never meets a bare number whose basis is
+   unstated. Thresholds are the product's to choose; see DESIGN-CONTRACT.md §1.3. */
+.emph-solid {
+  opacity: var(--emph-solid);
+}
+.emph-faded {
+  opacity: var(--emph-faded);
+}
+.emph-hatched {
+  opacity: var(--emph-hatched);
+  text-decoration: underline dotted var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------- instant tooltip
+ * Native title is too slow for an instrument panel. Any element with [data-hint]
+ * shows its definition immediately on hover / focus. Enterprise density demands it. */
+[data-hint] {
+  position: relative;
+}
+
+[data-hint]::after {
+  content: attr(data-hint);
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  z-index: var(--z-tooltip);
+  width: max-content;
+  max-width: 260px;
+  padding: 6px 9px;
+  border: 1px solid var(--surface-ink-line);
+  border-radius: var(--radius-sm);
+  /* inverted — on a light canvas a tooltip must read as an overlay, not another panel */
+  background: var(--surface-ink);
+  color: var(--ink-inverse);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-snug);
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: var(--shadow-2);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-2px);
+  transition:
+    opacity var(--dur-micro) var(--ease-out-quad),
+    transform var(--dur-micro) var(--ease-out-quad);
+  pointer-events: none;
+}
+
+[data-hint][data-hint-end]::after {
+  left: auto;
+  right: 0;
+}
+
+[data-hint]:hover::after,
+[data-hint]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+/* app-wide layout skeleton reused by every route */
+.app {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Content ARRIVES — it crossfades up from the skeleton it replaces instead of popping into
+   place. Opacity only, deliberately: a transform here would establish a containing block and
+   dislodge every position:fixed overlay a surface owns for the duration of the animation.
+   The skeleton is a <section> and content is a <div>, so React remounts and this actually runs.
+   Under prefers-reduced-motion the duration token already collapses to nothing. */
+.surface:not(.surface-loading) {
+  animation: surface-in var(--dur-fast) var(--ease-out-quad);
+}
+
+/* A surface that hosts a scroll-owning child — a data grid, a canvas, a split pane — must be a
+   CONSTRAINED flex column, not a growing block. `<DataGrid>` is `flex: 1; min-height: 0`, so
+   without this it sizes to its full row count and pushes its own status bar below the fold,
+   taking the calibration line with it. `min-height: 0` is the load-bearing half: a flex child
+   defaults to `min-height: auto` and refuses to shrink below its content. */
+.surface-fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes surface-in {
+  from {
+    opacity: 0;
+  }
+}

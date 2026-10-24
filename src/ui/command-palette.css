@@ -1,0 +1,258 @@
+.palette-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12vh;
+  /* A flat scrim, not frosted glass. Glassmorphism reads consumer and muddies the
+     hairlines of the page underneath (DESIGN-CONTRACT §0.1). */
+  background: var(--surface-scrim);
+  animation: scrim-in var(--dur-fast) var(--ease-out-quad);
+}
+
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.palette {
+  display: flex;
+  flex-direction: column;
+  width: min(680px, 92vw);
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+  animation: palette-in var(--dur-fast) var(--ease-standard);
+}
+
+@keyframes palette-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.99);
+  }
+}
+
+/* ---------------------------------------------------------------- query field */
+.palette-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
+  height: 52px;
+  border-bottom: 1px solid var(--line);
+}
+
+.palette-field-icon {
+  flex: none;
+  color: var(--ink-faint);
+}
+
+.palette-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-md);
+  padding: 0;
+}
+
+.palette-input::placeholder {
+  color: var(--ink-quiet);
+}
+
+/* ---------------------------------------------------------------- results */
+.palette-results {
+  /* Sized so the blank state — Recent plus the routes it has not already offered — lands whole,
+     without a heading left orphaned at the cut. Beyond that the list scrolls, as it must. */
+  max-height: min(56vh, 468px);
+  overflow-y: auto;
+  /* the list is the scroll region; reaching its end must not hand the wheel to the page behind */
+  overscroll-behavior: contain;
+  padding: 0 var(--space-2) var(--space-2);
+}
+
+.palette-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sticky headings keep the reader's place while a long entity list scrolls under them.
+   Opaque paper, because content passing beneath a translucent heading smears. */
+.palette-group-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-3) var(--space-2);
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--line-faint);
+}
+
+.palette-group-count {
+  font-size: var(--text-2xs);
+  color: var(--ink-quiet);
+}
+
+/* One ruler: icon, name, facet and figure sit in fixed columns, so every row's facet ends on
+   the same edge and every figure aligns to the same right margin down the whole list.
+   The figure track is 112px, not 92: a surface row prints the deep link it resolves to, and
+   `#/investigations` overran a 92px track and set itself straight through the facet beside it. */
+.palette-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) minmax(0, 170px) minmax(0, 112px) 14px;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: 36px;
+  padding: 0 var(--space-3);
+  margin-top: 1px;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  color: var(--ink-muted);
+  transition: background var(--dur-micro) var(--ease-out-quad);
+}
+
+.palette-group-head + .palette-row {
+  margin-top: var(--space-2);
+}
+
+.palette-row-icon {
+  color: var(--ink-faint);
+}
+
+.palette-row.sel {
+  background: var(--accent-wash);
+  color: var(--ink);
+}
+
+.palette-row.sel .palette-row-icon {
+  color: var(--accent);
+}
+
+.palette-label {
+  min-width: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.palette-meta {
+  min-width: 0;
+  justify-self: end;
+  font-size: var(--text-xs);
+  color: var(--ink-quiet);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.palette-figure {
+  justify-self: end;
+  min-width: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The typed run, marked in the row's name — the answer to "why is this row here", which matters
+   most when the match is not at the front of the string. The frame's own selection blue at wash
+   strength: no new hue enters the palette, and the mark carries no weight or size change, so the
+   row's rhythm is untouched. The negative margin lets the tint bleed one pixel past the glyphs
+   so it reads as a marked RUN rather than as a box drawn around letters. */
+.palette-hit {
+  background: var(--accent-wash-strong);
+  color: var(--ink);
+  font-weight: var(--weight-bold);
+  padding: 1px;
+  margin: -1px;
+  border-radius: var(--radius-xs);
+}
+
+.palette-figure .metric {
+  font-size: var(--text-xs);
+}
+
+/* the deep link a surface row resolves to — teaching the address, not decorating the row */
+.pal-route,
+.pal-stamp {
+  font-size: var(--text-2xs);
+  color: var(--ink-quiet);
+}
+
+.palette-enter {
+  justify-self: end;
+  color: var(--ink-faint);
+  opacity: 0;
+  transition: opacity var(--dur-micro) var(--ease-out-quad);
+}
+
+.palette-row.sel .palette-enter {
+  opacity: 1;
+}
+
+/* A row is a destination, not an analysis. Its instant tooltips would be clipped by the
+   result list's own scroll box, so they are suppressed here; the treatment still encodes
+   confidence on the figure itself. */
+.palette-row [data-hint]::after {
+  content: none;
+}
+
+.palette-empty {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--ink-quiet);
+}
+
+/* ---------------------------------------------------------------- foot */
+.palette-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: 34px;
+  padding: 0 var(--space-4);
+  border-top: 1px solid var(--line);
+  background: var(--surface-1);
+}
+
+.palette-keys {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-2xs);
+  color: var(--ink-quiet);
+}
+
+.palette-keys kbd {
+  min-width: 18px;
+  justify-content: center;
+}
+
+.palette-keys kbd + span {
+  margin-right: var(--space-3);
+}
+
+.palette-corpus {
+  font-size: var(--text-2xs);
+  color: var(--ink-quiet);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
